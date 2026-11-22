@@ -38,7 +38,18 @@ router.post(
     const json = await resp.json().catch(() => null);
     const image = json?.image;
     if (json?.status_code !== 200 || !image?.url) {
-      throw new ApiError(502, "Image upload failed", "UPLOAD_FAILED");
+      const providerMsg =
+        json?.error?.message || json?.status_txt || `HTTP ${resp.status}`;
+      console.error(
+        "freeimage.host upload failed:",
+        resp.status,
+        JSON.stringify(json)?.slice(0, 500)
+      );
+      throw new ApiError(
+        502,
+        `Image upload failed: ${providerMsg}`,
+        "UPLOAD_FAILED"
+      );
     }
     res.status(201).json({
       success: true,
