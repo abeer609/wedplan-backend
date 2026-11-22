@@ -81,6 +81,7 @@ export const vendorBookings = asyncHandler(async (req, res) => {
   const [items, total] = await Promise.all([
     Booking.find(filter)
       .populate("serviceId", "serviceName images price location")
+      .populate("customerId", "name email image phone")
       .sort({ createdAt: -1 })
       .skip((q.page - 1) * q.limit)
       .limit(q.limit)
@@ -100,7 +101,9 @@ async function transitionVendorBooking(req, res, to) {
     { _id: id, vendorId: String(req.user._id), status: "pending" },
     { $set: { status: to } },
     { returnDocument: 'after' }
-  );
+  )
+    .populate("serviceId", "serviceName images price location")
+    .populate("customerId", "name email image phone");
   if (!updated) {
     const existing = await Booking.findById(id);
     if (!existing) throw new ApiError(404, "Booking not found", "NOT_FOUND");

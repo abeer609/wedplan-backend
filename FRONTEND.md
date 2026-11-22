@@ -243,10 +243,16 @@ populated (`serviceName, images, price, location`).
 
 ## 7. Vendor — incoming bookings (`vendor` or `admin` token)
 
-- `GET /api/vendor/bookings?status=&page=&limit=` — requests for my services
-  (populated service). Filter tabs: pending / accepted / rejected / cancelled.
-- `PATCH /api/vendor/bookings/:id/accept` → `accepted`
-- `PATCH /api/vendor/bookings/:id/reject` → `rejected`
+- `GET /api/vendor/bookings?status=&page=&limit=` — requests for my services.
+  Both `serviceId` (serviceName, images, price, location) and `customerId`
+  (name, email, image, phone) are populated — show the customer card
+  (avatar, name, phone, email) next to the Accept/Reject buttons so the
+  vendor can review who they're accepting. Filter tabs: pending / accepted /
+  rejected / cancelled.
+- `PATCH /api/vendor/bookings/:id/accept` → `accepted` (response includes the
+  populated `serviceId` + `customerId`, so no re-fetch needed to show the
+  confirmation)
+- `PATCH /api/vendor/bookings/:id/reject` → `rejected` (same populated shape)
 - Both are **atomic**: only `pending` rows owned by me transition; anything
   else → `409 ALREADY_PROCESSED`. On 409, re-fetch the list (another tab or
   the admin may have acted). Optimistic UI must roll back on 409.
