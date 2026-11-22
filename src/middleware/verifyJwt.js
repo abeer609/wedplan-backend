@@ -69,7 +69,7 @@ export const attachUser = async (req, res, next) => {
     const id = req.auth?.userId;
     let doc = null;
     if (id && mongoose.isValidObjectId(id)) {
-      doc = await User.findById(id);
+      doc = await User.findOne({ _id: new mongoose.Types.ObjectId(id) });
     }
     if (!doc && id) {
       const raw = await User.collection.findOne({ _id: id });

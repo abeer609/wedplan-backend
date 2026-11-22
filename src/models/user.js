@@ -2,10 +2,6 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    _id: {
-      type: String,
-      default: () => new mongoose.Types.ObjectId().toString(),
-    },
     name: { type: String, default: "" },
     email: { type: String, unique: true, sparse: true, index: true },
     image: { type: String, default: "" },

@@ -18,7 +18,17 @@ async function main() {
   user.roleSelected = true;
   user.isBlocked = false;
   user.subscriptionPlan = "premium";
-  await user.save();
+  await User.updateOne(
+    { _id: user._id },
+    {
+      $set: {
+        role: "admin",
+        roleSelected: true,
+        isBlocked: false,
+        subscriptionPlan: "premium",
+      },
+    }
+  );
   console.log(`Promoted to admin: ${env.ADMIN_EMAIL}`);
   process.exit(0);
 }
