@@ -60,13 +60,12 @@ Status codes: **401** bad/missing/expired token, **403** wrong role / blocked / 
 - Vendor edits to key fields (`serviceName, category, description, price, location`) reset `status` to `pending` (re-moderation).
 - Admins cannot block themselves or other admins.
 
-## Stripe (premium only after webhook)
+## Stripe (one-time premium payment, webhook-activated)
 
-1. `POST /subscriptions/checkout` creates a Checkout Session (`mode: 'subscription'`, `client_reference_id = userId`).
+1. `POST /subscriptions/checkout` creates a Checkout Session (`mode: 'payment'`, `client_reference_id = userId`).
 2. Redirect → Stripe → `/payment/success?session_id=…`. The success page **only polls `GET /subscriptions/me`**; it never activates anything locally.
-3. Webhook (`checkout.session.completed`) upserts the transaction idempotently on `stripeSessionId` and sets `subscriptionPlan='premium'` + `subscriptionExpiresAt`.
-4. `invoice.paid` extends expiry, `invoice.payment_failed` marks failed, `customer.subscription.deleted/updated` downgrades to free, `checkout.session.expired` marks expired.
-5. Expiry safety net: `subscriptionExpiresAt < now` is treated as free, plus an hourly sweep downgrades expired rows.
+3. Webhook (`checkout.session.completed` with `payment_status=paid`, `mode=payment`) upserts the transaction idempotently on `stripeSessionId` and sets `subscriptionPlan='premium'` permanently. Delayed methods resolve via `checkout.session.async_payment_succeeded/failed`; abandoned sessions → `expired`; refunds via `charge.refunded`.
+4. Premium never expires — no renewals, no downgrade sweep, no subscription events.
 
 Test locally with the Stripe CLI:
 

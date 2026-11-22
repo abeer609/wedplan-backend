@@ -143,18 +143,22 @@ export const adminStats = asyncHandler(async (req, res) => {
 });
 
 export const getSubscriptionOverview = asyncHandler(async (req, res) => {
-  const premium = await User.countDocuments({
-    subscriptionPlan: "premium",
-    $or: [
-      { subscriptionExpiresAt: null },
-      { subscriptionExpiresAt: { $gt: new Date() } },
-    ],
+  const [premium, free, paidTransactions, totalRevenue] = await Promise.all([
+    User.countDocuments({ subscriptionPlan: "premium" }),
+    User.countDocuments({ subscriptionPlan: { $ne: "premium" } }),
+    Transaction.countDocuments({ status: "paid" }),
+    Transaction.aggregate([
+      { $match: { status: "paid" } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]),
+  ]);
+  res.json({
+    success: true,
+    data: {
+      premium,
+      free,
+      paidTransactions,
+      totalRevenue: totalRevenue?.[0]?.total || 0,
+    },
   });
-  const free = await User.countDocuments({
-    $or: [
-      { subscriptionPlan: "free" },
-      { subscriptionExpiresAt: { $lte: new Date() } },
-    ],
-  });
-  res.json({ success: true, data: { premium, free } });
 });

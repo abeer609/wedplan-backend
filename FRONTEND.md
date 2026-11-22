@@ -254,8 +254,9 @@ populated (`serviceName, images, price, location`).
 ## 8. Profile & onboarding (any logged-in token)
 
 - `GET /api/users/me` → full user doc **plus `effectivePlan`**
-  (`"free"` | `"premium"` — expiry-aware). **Display `effectivePlan`, not
-  `subscriptionPlan`**, for gating/limit UI.
+  (`"free"` | `"premium"` — equals `subscriptionPlan`; one-time purchase,
+  never expires). **Display `effectivePlan`, not `subscriptionPlan`**, for
+  gating/limit UI.
   ```jsonc
   { "_id": "...", "name": "", "email": "...", "image": "", "phone": "",
     "role": "customer", "isBlocked": false, "roleSelected": false,
@@ -274,32 +275,32 @@ populated (`serviceName, images, price, location`).
 - Avatar/profile image: upload via `POST /uploads` first, then save the URL
   with `PATCH /me`. (Signup image is uploaded **after** the account exists.)
 
-## 9. Subscriptions / premium (`vendor` or `admin` token)
+## 9. Premium — one-time payment (`vendor` or `admin` token)
 
 - `GET /api/subscriptions/me` → poll this for plan state:
   ```jsonc
   { "plan": "free",                 // effective: free | premium (USE THIS)
     "subscriptionPlan": "free",     // raw stored value
-    "subscriptionExpiresAt": null,  // ISO or null
+    "subscriptionExpiresAt": null,  // always null (kept for compatibility)
     "stripeCustomerId": "cus_..." }  // null until first checkout
   ```
 - `POST /api/subscriptions/checkout` (201) → `{ url, sessionId }`.
-  Redirect the browser to `url` (Stripe Checkout, subscription mode).
+  Redirect the browser to `url` (Stripe Checkout, **one-time payment**).
   Success lands on `/payment/success?session_id={CHECKOUT_SESSION_ID}`;
   cancelled lands on `/payment/cancelled`.
 - **Success page must ONLY poll `GET /subscriptions/me`** until `plan`
   becomes `"premium"` (e.g. every 2–3s, timeout ~60–90s with a "still
   processing — webhooks can lag, check Stripe CLI in dev" state). **Never
   set premium client-side** — premium is granted exclusively by the Stripe
-  webhook. If polling times out, show "payment received, activation pending"
+  webhook (`checkout.session.completed` with paid one-time payment).
+  If polling times out, show "payment received, activation pending"
   and let them retry polling later.
-- `POST /api/subscriptions/portal` → `{ url }` (Stripe billing portal:
-  manage/cancel). Show only when `stripeCustomerId` is set; otherwise the
-  endpoint 404s — hide the button.
-- Downgrade semantics for the UI: when premium lapses, existing services
-  **stay**, but creating/reactivating beyond the free limit is blocked
-  (`UPGRADE_REQUIRED`). Show a persistent "Free plan (3 active listings)"
-  meter from `GET /vendor/stats` + `plan`.
+- `POST /api/subscriptions/portal` → `{ customerId, lastCharge: { id, amount, currency, created, receiptUrl } | null }`
+  (payment receipt lookup — there is no subscription to manage/cancel).
+  Show only when `stripeCustomerId` is set; otherwise the endpoint 404s —
+  hide the button.
+- Premium is **permanent**: no expiry, no renewal, no downgrade. Gate copy
+  should say "one-time / lifetime premium", not "per month".
 - Dev testing: `stripe listen --forward-to localhost:8000/api/webhooks/stripe`.
 
 ## 10. Stats dashboards (token)
@@ -315,7 +316,7 @@ populated (`serviceName, images, price, location`).
   `{ "bookings": { "total": 0, "pending": 0, "accepted": 0, "cancelled": 0 } }`
 - Admin overview: `GET /api/admin/stats` (users/services/bookings/revenue —
   revenue sums `paid` transactions only) and
-  `GET /api/admin/subscriptions/overview` (`{ premium, free }`).
+  `GET /api/admin/subscriptions/overview` (`{ premium, free, paidTransactions, totalRevenue }`).
 
 ## 11. Image upload (token)
 

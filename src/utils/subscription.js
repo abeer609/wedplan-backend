@@ -5,14 +5,7 @@ export const FREE_ACTIVE_SERVICE_LIMIT = 3;
 
 export function getEffectivePlan(user) {
   if (!user) return "free";
-  if (user.subscriptionPlan !== "premium") return "free";
-  if (
-    user.subscriptionExpiresAt &&
-    new Date(user.subscriptionExpiresAt).getTime() < Date.now()
-  ) {
-    return "free";
-  }
-  return "premium";
+  return user.subscriptionPlan === "premium" ? "premium" : "free";
 }
 
 export function countActiveVendorServices(vendorId) {

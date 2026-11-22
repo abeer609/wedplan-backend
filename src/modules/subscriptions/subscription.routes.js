@@ -49,14 +49,13 @@ router.post(
     const successUrl = `${env.CLIENT_URL.replace(/\/$/, "")}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${env.CLIENT_URL.replace(/\/$/, "")}/payment/cancelled`;
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode: "payment",
       customer: customerId,
       client_reference_id: vendorId,
       line_items: [{ price: env.STRIPE_PRICE_ID, quantity: 1 }],
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { vendorId },
-      subscription_data: { metadata: { vendorId } },
     });
     res.status(201).json({ success: true, data: { url: session.url, sessionId: session.id } });
   })
@@ -69,11 +68,25 @@ router.post(
     if (!req.user.stripeCustomerId) {
       throw new ApiError(404, "No Stripe customer found", "NOT_FOUND");
     }
-    const portal = await stripe.billingPortal.sessions.create({
+    const charges = await stripe.charges.list({
       customer: req.user.stripeCustomerId,
-      return_url: env.CLIENT_URL,
+      limit: 1,
     });
-    res.json({ success: true, data: { url: portal.url } });
+    res.json({
+      success: true,
+      data: {
+        customerId: req.user.stripeCustomerId,
+        lastCharge: charges.data?.[0]
+          ? {
+              id: charges.data[0].id,
+              amount: charges.data[0].amount / 100,
+              currency: charges.data[0].currency,
+              created: new Date(charges.data[0].created * 1000).toISOString(),
+              receiptUrl: charges.data[0].receipt_url || null,
+            }
+          : null,
+      },
+    });
   })
 );
 

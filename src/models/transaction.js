@@ -7,7 +7,7 @@ const transactionSchema = new mongoose.Schema(
     amount: { type: Number, required: true, min: 0 },
     currency: { type: String, default: "usd" },
     stripeSessionId: { type: String, unique: true, sparse: true, index: true },
-    stripeSubscriptionId: { type: String, default: null, index: true },
+    stripePaymentIntentId: { type: String, default: null, index: true },
     status: {
       type: String,
       enum: ["paid", "failed", "refunded", "expired"],
