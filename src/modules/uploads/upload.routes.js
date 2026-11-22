@@ -16,10 +16,16 @@ router.post(
   notBlocked,
   upload.single("image"),
   asyncHandler(async (req, res) => {
+    const startedAt = Date.now();
+    console.log(
+      `[upload] incoming: user=${req.user?._id} file=${req.file?.originalname} mimetype=${req.file?.mimetype} size=${req.file?.size} bytes`
+    );
     if (!req.file) {
+      console.log("[upload] rejected: no file received by multer");
       throw new ApiError(400, "No image file provided", "NO_FILE");
     }
     if (!env.FREEIMAGE_API_KEY) {
+      console.log("[upload] rejected: FREEIMAGE_API_KEY missing");
       throw new ApiError(503, "Image upload is not configured", "NOT_CONFIGURED");
     }
     const form = new FormData();
@@ -35,7 +41,11 @@ router.post(
       method: "POST",
       body: form,
     });
+    const elapsed = Date.now() - startedAt;
     const json = await resp.json().catch(() => null);
+    console.log(
+      `[upload] provider responded in ${elapsed}ms: http=${resp.status} status_code=${json?.status_code} status_txt=${json?.status_txt} error=${json?.error ? JSON.stringify(json.error) : "none"}`
+    );
     const image = json?.image;
     if (json?.status_code !== 200 || !image?.url) {
       const providerMsg =
@@ -62,6 +72,9 @@ router.post(
         ...(image.delete_url ? { deleteUrl: image.delete_url } : {}),
       },
     });
+    console.log(
+      `[upload] success in ${Date.now() - startedAt}ms: url=${image.url}`
+    );
   })
 );
 
