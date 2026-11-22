@@ -39,7 +39,6 @@ router.post(
                 amount: (s.amount_total ?? 0) / 100,
                 currency: s.currency || "usd",
                 stripeSessionId: s.id,
-                status: "paid",
               },
               $set: {
                 ...(pi ? { stripePaymentIntentId: pi } : {}),
