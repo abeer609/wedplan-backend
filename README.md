@@ -13,8 +13,15 @@ Authentication is owned by the frontend (Better Auth). This server is a **JWT re
 npm install
 cp .env.example .env   # fill in values (MongoDB Atlas URI, secrets)
 npm run create:indexes
+npm run seed:admin      # creates/promotes ADMIN_EMAIL with ADMIN_PASSWORD login
 npm run dev            # or: npm start
 ```
+
+`seed:admin` is idempotent: if no user exists with `ADMIN_EMAIL` it creates
+one; otherwise it promotes the existing account. In both cases it sets
+`role=admin`, unblocks, grants premium, and (up)sets the email+password
+credential so the admin can sign in on the frontend with
+`ADMIN_EMAIL` / `ADMIN_PASSWORD`.
 
 ## Env vars
 
@@ -31,6 +38,7 @@ npm run dev            # or: npm start
 | `STRIPE_PRICE_ID` | premium subscription price id |
 | `IMGBB_API_KEY` | image upload key |
 | `ADMIN_EMAIL` | seed admin email (`npm run seed:admin`) |
+| `ADMIN_PASSWORD` | seed admin password (email+password login, min 8 chars) |
 
 ## API (`/api`)
 
