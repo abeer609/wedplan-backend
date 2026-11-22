@@ -29,7 +29,7 @@ npm run dev            # or: npm start
 | `STRIPE_SECRET_KEY` | Stripe API key |
 | `STRIPE_WEBHOOK_SECRET` | webhook signing secret |
 | `STRIPE_PRICE_ID` | premium subscription price id |
-| `IMGBB_API_KEY` | image upload key |
+| `FREEIMAGE_API_KEY` | freeimage.host API key |
 | `ADMIN_EMAIL` | seed admin email (`npm run seed:admin`) |
 
 ## API (`/api`)
@@ -46,7 +46,7 @@ npm run dev            # or: npm start
 | Webhooks | `POST /webhooks/stripe` (raw body, signature verified) |
 | Admin | `GET /admin/users`, `GET /admin/users/:id`, `PATCH /admin/users/:id/block\|unblock`, `GET /admin/services`, `PATCH /admin/services/:id/approve\|reject\|status`, `DELETE /admin/services/:id`, `GET /admin/transactions`, `GET /admin/stats` |
 | Stats | `GET /vendor/stats`, `GET /customer/stats` |
-| Uploads | `POST /uploads` (multipart `image`, ≤2MB, jpg/png/webp → ImgBB) |
+| Uploads | `POST /uploads` (multipart `image`, ≤2MB, jpg/png/webp → freeimage.host) |
 
 Status codes: **401** bad/missing/expired token, **403** wrong role / blocked / non-owner, **404** missing records, **409** duplicates/already-processed, **422** validation errors.
 

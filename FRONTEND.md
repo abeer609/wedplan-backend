@@ -141,7 +141,7 @@ Use for filter dropdowns — hardcode is fine too, values are stable.
   "description": "...",
   "price": 50000,
   "location": "Dhaka",
-  "images": ["https://..."],      // ImgBB URLs, max 10
+  "images": ["https://..."],      // freeimage.host URLs, max 10
   "status": "approved",            // pending | approved | rejected
   "isActive": true,                // vendor availability toggle
   "createdAt": "...", "updatedAt": "..."
@@ -324,10 +324,11 @@ POST /api/uploads     Content-Type: multipart/form-data, field: image
 ```
 - Constraints: single file, ≤ 2MB, `jpg/png/webp` only (else 400).
   Rate-limited — don't retry in a tight loop.
-- 201 → `{ success, data: { url, displayUrl, deleteUrl } }`. Store **`url`**
-  in service `images[]` / profile `image`. Secret key stays server-side;
+- 201 → `{ success, data: { url, displayUrl, viewerUrl, thumbUrl, mediumUrl, deleteUrl? } }`.
+  Store **`url`** in service `images[]` / profile `image`. `thumbUrl`/`mediumUrl`
+  are handy for cards and lists. Secret key stays server-side;
   the client never sees it.
-- 503 `NOT_CONFIGURED` = backend missing `IMGBB_API_KEY` — surface as
+- 503 `NOT_CONFIGURED` = backend missing `FREEIMAGE_API_KEY` — surface as
   "uploads temporarily unavailable".
 
 ## 12. Admin panel (`admin` token; everything under `/api/admin`)

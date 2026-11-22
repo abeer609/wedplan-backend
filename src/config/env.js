@@ -13,7 +13,7 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().optional().default(""),
   STRIPE_PRICE_ID: z.string().optional().default(""),
-  IMGBB_API_KEY: z.string().optional().default(""),
+  FREEIMAGE_API_KEY: z.string().optional().default(""),
   ADMIN_EMAIL: z.string().email().default("admin@wedplan.local"),
   NODE_ENV: z.string().optional().default("development"),
 });
