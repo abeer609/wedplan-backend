@@ -15,7 +15,6 @@ const envSchema = z.object({
   STRIPE_PRICE_ID: z.string().optional().default(""),
   IMGBB_API_KEY: z.string().optional().default(""),
   ADMIN_EMAIL: z.string().email().default("admin@wedplan.local"),
-  ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 chars").default("Admin123!"),
   NODE_ENV: z.string().optional().default("development"),
 });
 
