@@ -12,6 +12,7 @@ const bookingSchema = new mongoose.Schema(
     customerId: { type: String, ref: "User", required: true, index: true },
     eventDate: { type: Date, required: true },
     eventLocation: { type: String, required: true, trim: true },
+    phone: { type: String, required: true, trim: true, minlength: 7, maxlength: 30 },
     message: { type: String, default: "" },
     status: {
       type: String,
