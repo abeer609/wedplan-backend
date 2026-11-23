@@ -211,9 +211,12 @@ New services should show an "Active / Paused" switch bound to this endpoint.
 
 ### `POST /bookings` — create (201)
 ```jsonc
-{ "serviceId": "507f...", "eventDate": "<ISO datetime>", "eventLocation": "Dhaka Hall", "message": "optional ≤1000 chars" }
+{ "serviceId": "507f...", "eventDate": "<ISO datetime>", "eventLocation": "Dhaka Hall", "phone": "01XXXXXXXXX", "message": "optional ≤1000 chars" }
 ```
 Rules the UI must enforce pre-submit (server re-checks all):
+- `phone` is **required** (7–30 chars) — this is how the vendor contacts the
+  customer later. Prefill from `GET /users/me` (`phone`) but always send it
+  with the booking request.
 - Service must be **public** (approved + active) or `404`.
 - **No self-booking**: the service's vendor can't be you (`403`).
 - `eventDate` must be **in the future** — send a full ISO datetime, not a
@@ -230,7 +233,7 @@ populated (`serviceName, images, price, location`).
 ### Booking object & `PATCH /bookings/:id/cancel`
 ```jsonc
 { "_id": "...", "serviceId": {...populated...}, "vendorId": "abc", "customerId": "xyz",
-  "eventDate": "...", "eventLocation": "...", "message": "...",
+  "eventDate": "...", "eventLocation": "...", "phone": "01XXXXXXXXX", "message": "...",
   "status": "pending", "createdAt": "...", "updatedAt": "..." }
 // status: pending | accepted | rejected | cancelled
 ```
@@ -247,7 +250,10 @@ populated (`serviceName, images, price, location`).
   Both `serviceId` (serviceName, images, price, location) and `customerId`
   (name, email, image, phone) are populated — show the customer card
   (avatar, name, phone, email) next to the Accept/Reject buttons so the
-  vendor can review who they're accepting. Filter tabs: pending / accepted /
+  vendor can review who they're accepting. Each booking also carries its own
+  `phone` field (the contact number given at booking time) — **display
+  `booking.phone` as the contact number**, falling back to
+  `customerId.phone` only if missing. Filter tabs: pending / accepted /
   rejected / cancelled.
 - `PATCH /api/vendor/bookings/:id/accept` → `accepted` (response includes the
   populated `serviceId` + `customerId`, so no re-fetch needed to show the
