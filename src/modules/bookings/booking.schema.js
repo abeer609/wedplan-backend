@@ -6,6 +6,7 @@ export const createBookingSchema = z.object({
     message: "eventDate must be in the future",
   }),
   eventLocation: z.string().trim().min(2).max(300),
+  phone: z.string().trim().min(7, "Phone number is required").max(30),
   message: z.string().trim().max(1000).optional().default(""),
 });
 
