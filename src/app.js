@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
+import { connectDB } from "./config/db.js";
 import { sanitize } from "./middleware/sanitize.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
 import { notFound } from "./middleware/notFound.js";
@@ -28,6 +29,15 @@ export function createApp() {
       credentials: true,
     })
   );
+
+  app.use(async (req, res, next) => {
+    try {
+      await connectDB(env.MONGODB_URI);
+      next();
+    } catch (err) {
+      next(err);
+    }
+  });
 
   app.use("/api/webhooks", express.raw({ type: "application/json" }), webhookRouter);
 
@@ -65,3 +75,7 @@ export function createApp() {
   app.use(errorHandler);
   return app;
 }
+
+const app = createApp();
+
+export default app;
