@@ -21,6 +21,7 @@ export const createBooking = asyncHandler(async (req, res) => {
       customerId,
       eventDate: body.eventDate,
       eventLocation: body.eventLocation,
+      phone: body.phone,
       message: body.message || "",
     });
     res.status(201).json({ success: true, data: booking });
